@@ -1,0 +1,26 @@
+{
+  "name": "todo",
+  "scripts": {
+    "dev": "bun run --watch src/index.tsx",
+    "migration:generate": "bunx drizzle-kit generate",
+    "migration:push": "bun src/db/migrate.ts",
+    "migrate": "bun migration:generate && bun migration:push",
+    "migrate:file": "bun run ./src/db/migrate.ts"
+  },
+  "dependencies": {
+    "@elysiajs/html": "^1.0.2",
+    "@elysiajs/jwt": "^1.0.2",
+    "@elysiajs/static": "^1.0.3",
+    "@elysiajs/swagger": "^1.0.5",
+    "@kitajs/ts-html-plugin": "^4.0.1",
+    "drizzle-orm": "^0.30.10",
+    "elysia": "latest",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.0.10",
+    "@typescript-eslint/eslint-plugin": "^7.3.1",
+    "drizzle-kit": "^0.21.2",
+    "typescript": "^5.4.2"
+  }
+}
