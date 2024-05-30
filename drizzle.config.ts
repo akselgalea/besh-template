@@ -6,6 +6,6 @@ export default defineConfig({
   out: './drizzle',
   dbCredentials: {
     dbName: 'sqlite',
-    url: 'file:/home/devmafia/projects/testing/sqlite.db'
+    url: `file:${__dirname}/sqlite.db`
   }
 })

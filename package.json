@@ -5,7 +5,8 @@
     "migration:generate": "bunx drizzle-kit generate",
     "migration:push": "bun src/db/migrate.ts",
     "migrate": "bun migration:generate && bun migration:push",
-    "migrate:file": "bun run ./src/db/migrate.ts"
+    "migrate:file": "bun run ./src/db/migrate.ts",
+    "db:studio": "bunx drizzle-kit studio"
   },
   "dependencies": {
     "@elysiajs/html": "^1.0.2",
@@ -18,9 +19,9 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@types/bun": "^1.0.10",
-    "@typescript-eslint/eslint-plugin": "^7.3.1",
-    "drizzle-kit": "^0.21.2",
-    "typescript": "^5.4.2"
+    "@types/bun": "^1.1.3",
+    "@typescript-eslint/eslint-plugin": "^7.11.0",
+    "drizzle-kit": "^0.21.4",
+    "typescript": "^5.4.5"
   }
 }
