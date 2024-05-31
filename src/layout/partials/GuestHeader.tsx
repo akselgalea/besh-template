@@ -1,4 +1,4 @@
-import { type PropsWithChildren } from "@kitajs/html"
+import type { PropsWithChildren } from "@kitajs/html"
 
 const GuestHeader = ({ currentUrl, children }: PropsWithChildren<{ currentUrl: string }>) => {
   const active = ' bg-white text-black'
@@ -23,4 +23,4 @@ const GuestHeader = ({ currentUrl, children }: PropsWithChildren<{ currentUrl: s
   )
 }
 
-export default GuestHeader
+export { GuestHeader }

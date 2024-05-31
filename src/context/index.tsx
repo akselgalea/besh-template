@@ -12,3 +12,8 @@ export const ctx = new Elysia({
 .use(jwt({ secret: process.env.JWT_SECRET! }))
 .state('ENV', process.env.ENVIRONMENT)
 .decorate('db', db)
+.derive({ as: 'global' }, async ({ jwt, cookie: { auth } }) => {
+  const session = await jwt.verify(auth.value)
+  
+  return { session }
+})

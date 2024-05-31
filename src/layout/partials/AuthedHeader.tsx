@@ -1,8 +1,8 @@
 import { User } from "@/types"
-import { type PropsWithChildren } from "@kitajs/html"
+import type { PropsWithChildren } from "@kitajs/html"
 
-const GuestHeader = ({ user, currentUrl, children }: PropsWithChildren<{ user: User, currentUrl: string }>) => {
-  const active = 'bg-white text-black'
+const AuthedHeader = ({ user, currentUrl, children }: PropsWithChildren<{ user: User, currentUrl: string }>) => {
+  const active = ' bg-white text-black'
 
   return (
     <header class="bg-black text-white">
@@ -12,6 +12,7 @@ const GuestHeader = ({ user, currentUrl, children }: PropsWithChildren<{ user: U
             <img src="/public/images/logos/bun.svg" width={30} alt="logo bun" />
             Home
           </a>
+          { children }
         </div>
 
         <div class="flex justify-end items-center [&>a]:py-2 [&>a]:px-6">
@@ -41,4 +42,4 @@ const GuestHeader = ({ user, currentUrl, children }: PropsWithChildren<{ user: U
   )
 }
 
-export default GuestHeader
+export { AuthedHeader }

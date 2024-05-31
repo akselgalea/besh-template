@@ -1,10 +1,4 @@
 const NotFound = () => {
-  const goBack = `
-    function goBack () {
-      window.history.back()
-    }
-  `
-
   return (
     <>
       <div class="w-1/2 m-auto flex flex-col items-center">
@@ -17,10 +11,6 @@ const NotFound = () => {
           Go back
         </button>
       </div>
-
-      <script>
-        { goBack }
-      </script>
     </>
   )
 }

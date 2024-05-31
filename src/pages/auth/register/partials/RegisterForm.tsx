@@ -16,9 +16,9 @@ const RegisterPage = ({ old, errors, errorMessage }: { old?: RegisterRequest, er
 
         <section class="flex flex-grow flex-col items-center justify-center w-full md:px-10">
           <header class="max-w-400px w-full md:text-center">
-            <h1 class="font-bold text-3xl">Welcome to Bun todo</h1>
+            <h1 class="font-bold text-3xl">Welcome to MyApp</h1>
 
-            <p class="font-medium text-base mt-2">Create your Bun todo account to start your journey</p>
+            <p class="font-medium text-base mt-2">Create your MyApp account to start your journey</p>
           </header>
 
           <section id="register-form" class="max-w-400px w-full mt-4">

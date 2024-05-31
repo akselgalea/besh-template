@@ -1,17 +1,13 @@
 import { ctx } from "@/context"
-import LoginPage from "@/auth/www/login/LogIn"
 import Elysia, { StatusMap, t } from "elysia"
 import { ValidateLogin } from "@/schema"
 import { Login } from "@/auth"
 import LoginForm from "./partials/LoginForm"
-import GuestHeader from "@/layout/partials/GuestHeader"
-import Layout from "@/layout/Layout"
-import Foot from "@/layout/partials/Foot"
-import Footer from "@/layout/partials/Footer"
+import { Layout, LayoutFoot } from "@/layout"
 
 export const LoginRoute = new Elysia()
   .use(ctx)
-  .get('/login', ({ path }) => {
+  .get('/login', () => {
     return (
       <Layout title="Login">
         <main class="grid grid-cols-1 lg:grid-cols-2">
@@ -29,7 +25,7 @@ export const LoginRoute = new Elysia()
               <header class="max-w-400px w-full md:text-center">
                 <h1 class="font-bold text-3xl">Welcome back</h1>
 
-                <p class="font-medium text-base mt-2">Enter your Bun todo account details.</p>
+                <p class="font-medium text-base mt-2">Enter your MyApp account details.</p>
               </header>
 
               <section id="socials" class="max-w-400px mt-8 w-full">
@@ -52,11 +48,11 @@ export const LoginRoute = new Elysia()
               <LoginForm></LoginForm>
             </section>
           </section>
-          <div class="bg-black h-full grid place-items-center">
+          <div class="bg-black h-full grid place-items-center max-lg:hidden">
             <img src="/public/images/logos/bun4x.png" alt="logo bun" />
           </div>
         </main>
-        <Foot guest={true}></Foot>
+        <LayoutFoot guest={true}></LayoutFoot>
       </Layout>
     )
   })

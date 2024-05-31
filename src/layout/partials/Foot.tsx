@@ -1,6 +1,6 @@
-import { type PropsWithChildren } from "@kitajs/html"
+import type { PropsWithChildren } from "@kitajs/html"
 
-const Foot = ({ guest, children }: PropsWithChildren<{ guest?: boolean }>) => {
+export const LayoutFoot = ({ guest, children }: PropsWithChildren<{ guest?: boolean }>) => {
   return (
     <>
       { children }
@@ -53,5 +53,3 @@ const toggleUserMenu = `
     hide()
   }
 `
-
-export default Foot
