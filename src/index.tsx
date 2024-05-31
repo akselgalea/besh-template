@@ -1,11 +1,11 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-
 import { Elysia } from 'elysia'
+import { swagger } from '@elysiajs/swagger'
 import { staticPlugin } from '@elysiajs/static'
 import { PageRoutes } from './pages'
 import { ctx } from './context'
 
 const app = new Elysia()
+  .use(swagger())
   .use(staticPlugin())
   .use(ctx)
   .use(PageRoutes)
