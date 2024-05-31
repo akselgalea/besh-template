@@ -1,7 +1,9 @@
 const NotFound = () => {
-  function goBack () {
-    window.history.back()
-  }
+  const goBack = `
+    function goBack () {
+      window.history.back()
+    }
+  `
 
   return (
     <>

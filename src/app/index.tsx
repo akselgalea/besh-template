@@ -1,17 +1,22 @@
 import { jwt } from "@elysiajs/jwt"
-import { db } from "@/db"
 import Elysia, { StatusMap } from "elysia"
 import HomePage from "./www/home/Home"
 import Layout from "@/layout/Layout"
-import { User } from "@/auth/types"
+import { User } from "@/types"
 import { NotFound as NotFoundPage } from "./www/not-found/NotFound"
+import { ctx } from "@/context"
 
 const AppRoutes = new Elysia()
-  .use(jwt({ secret: process.env.JWT_SECRET! }))
+  .use(ctx)
+  .derive(async ({ jwt, cookie: { auth } }) => {
+    const user = await jwt.verify(auth.value)
+
+    return { session: user }
+  })
   .guard(
     {
-      async beforeHandle({ set, jwt, cookie: { auth } }) {
-        if (!await jwt.verify(auth.value)) {
+      beforeHandle({ session, set }) {
+        if (!session) {
           set.status = StatusMap["Unauthorized"]
           set.redirect = '/login'
 
@@ -19,12 +24,14 @@ const AppRoutes = new Elysia()
         }
       }
   }, app => 
-    app.get('', async ({ jwt, cookie: { auth } }) => {
+    app.get('', async ({ path, jwt, cookie: { auth } }) => {
       const user = await jwt.verify(auth.value)
   
-      return <Layout title="Home page" currentUrl="/" user={ user as  User }>
-        <HomePage></HomePage>
-      </Layout>
+      return (
+        <Layout title="Home page" currentUrl={path} user={ user as  User }>
+          <HomePage></HomePage>
+        </Layout>
+      )
     })
     .get('*', async ({ path, cookie: { auth }, jwt }) => {
       const user = await jwt.verify(auth.value)
@@ -36,6 +43,5 @@ const AppRoutes = new Elysia()
       )
     })
   )
-
 
 export { AppRoutes }

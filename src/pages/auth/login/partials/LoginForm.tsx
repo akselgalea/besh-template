@@ -1,5 +1,5 @@
-import { type LoginRequest } from "@/types";
-import { typeToFlattenedError } from "zod";
+import { type LoginRequest } from "@/types"
+import { typeToFlattenedError } from "zod"
 
 const LoginForm = ({ old, errors, errorMessage }: { old?: LoginRequest, errorMessage?: string, errors?: typeToFlattenedError<{ email: string; password: string; }, string> }) => {
   return (

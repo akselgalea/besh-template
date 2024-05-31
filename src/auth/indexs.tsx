@@ -1,13 +1,13 @@
-import { ValidateLogin, ValidateRegister } from "@/auth/schema"
-import jwt from "@elysiajs/jwt"
+import { ValidateLogin, ValidateRegister } from "@/schema"
 import Elysia, { StatusMap, t } from "elysia"
-import LoginForm from "./www/login/partials/LoginForm"
-import { Login, Register } from "./utils"
+import LoginForm from "../pages/auth/login/partials/LoginForm"
+import { Login, Register } from "@/auth/index"
 import LoginPage from "./www/login/LogIn"
 import RegisterPage from "./www/register/Register"
+import { ctx } from "@/context"
 
 const AuthRoutes = new Elysia()
-  .use(jwt({ secret: process.env.JWT_SECRET! }))
+  .use(ctx)
   .guard({
     async beforeHandle({ set, jwt, cookie: { auth } }) {
       if (await jwt.verify(auth.value)) {
