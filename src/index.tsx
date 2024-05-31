@@ -1,7 +1,7 @@
 import { Elysia } from 'elysia'
 import { swagger } from '@elysiajs/swagger'
 import { staticPlugin } from '@elysiajs/static'
-import { PageRoutes } from './pages'
+import { PageRoutes } from './www'
 import { ctx } from './context'
 
 const app = new Elysia()

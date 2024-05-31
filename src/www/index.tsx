@@ -1,8 +1,8 @@
 import Elysia, { StatusMap } from "elysia"
 import { ctx } from "@/context"
-import { AuthRoutes } from "@/pages/auth"
+import { AuthRoutes } from "@/www/auth"
 import { AuthedHeader, Layout, LayoutFoot } from "@/layout"
-import { HomePage } from "@/pages/home"
+import { HomePage } from "@/www/home"
 import { NotFound } from "./404"
 import { User } from "@/types"
 
