@@ -130,6 +130,7 @@ export const LoginRoute = new Elysia()
     }
 
     const session: SessionData = {
+      id: user.id,
       name: user.name,
       email: user.email ?? '',
       emailVerifiedAt: user.emailVerifiedAt?.toString() ?? '',

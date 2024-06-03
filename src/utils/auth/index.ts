@@ -18,6 +18,7 @@ const Login = async ({ email, password }: { email: string, password: string }): 
   }
 
   return {
+    id: user.id,
     name: user.name,
     email: user.email ?? '',
     emailVerifiedAt: user.emailVerifiedAt?.toString() ?? '',

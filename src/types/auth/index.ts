@@ -25,6 +25,7 @@ type RegisterRequest = {
 }
 
 type SessionData = {
+  id: number
   name: string
   email: string
   emailVerifiedAt: string
