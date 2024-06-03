@@ -11,7 +11,7 @@ const Login = async ({ email, password }: { email: string, password: string }): 
     return null
   }
 
-  const passwordOK = await VerifyPassword({ password, hash: user.password! })
+  const passwordOK = await VerifyPassword({ password, hash: user.password ?? '' })
 
   if (!passwordOK) {
     return null
