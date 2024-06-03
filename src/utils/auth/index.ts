@@ -1,7 +1,8 @@
 import { db } from "@/db"
 import { users } from "@/db/schema"
+import { SessionData } from "@/types"
 
-const Login = async ({ email, password }: { email: string, password: string }) => {
+const Login = async ({ email, password }: { email: string, password: string }): Promise<SessionData | null> => {
   const user = await db.query.users.findFirst({
     where: (users, { eq }) => eq(users.email, email)
   })
@@ -10,19 +11,27 @@ const Login = async ({ email, password }: { email: string, password: string }) =
     return null
   }
 
-  const passwordOK = await VerifyPassword({ password, hash: user.password })
+  const passwordOK = await VerifyPassword({ password, hash: user.password! })
 
   if (!passwordOK) {
     return null
   }
 
-  return user
+  return {
+    name: user.name,
+    email: user.email ?? '',
+    emailVerifiedAt: user.emailVerifiedAt?.toString() ?? '',
+    profilePicture: user.profilePicture,
+    type: user.type,
+    typeUserId: user.typeUserId ?? '',
+    createdAt: user.createdAt.toString()
+  }
 }
 
 const Register = async ({ name, lastname, email, password }: { name: string, lastname: string, email: string, password: string }) => {
   const hashed = await HashPassword(password)
 
-  return db.insert(users).values({ name, lastname, email, password: hashed }).returning()
+  return db.insert(users).values({ name: `${name} ${lastname}`, email, password: hashed }).returning()
 }
 
 const HashPassword = (password: string): Promise<string> => {
@@ -38,3 +47,5 @@ const VerifyPassword = ({ password, hash }: { password: string, hash: string }):
 }
 
 export { Login, Register }
+export * from './github'
+export * from './google'

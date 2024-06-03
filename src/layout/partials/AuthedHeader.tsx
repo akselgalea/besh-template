@@ -22,7 +22,7 @@ const AuthedHeader = ({ user, currentUrl, children }: PropsWithChildren<{ user: 
               onclick="toggleUserMenu()"
               class="flex items-center gap-2 hover:bg-white hover:text-black font-semibold rounded py-2 px-6"
             >
-              {user.name}
+              {user.name.split(' ')[0]}
               <svg xmlns="http://www.w3.org/2000/svg" class="pointer-events-none icon icon-tabler icon-tabler-chevron-down hover:text-black" width="18" height="18" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                 <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                 <path d="M6 9l6 6l6 -6" />

@@ -4,7 +4,7 @@ import { ctx } from "@/context"
 import RegisterPage from "./partials/RegisterForm"
 import { Layout, LayoutFoot } from "@/layout"
 import { ValidateRegister } from "@/schema"
-import { Register } from "@/auth"
+import { Register } from "@/utils/auth"
 
 export const RegisterRoute = new Elysia()
   .use(ctx)

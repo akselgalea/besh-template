@@ -1,11 +1,12 @@
 CREATE TABLE `users` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,
-	`lastname` text NOT NULL,
-	`email` text NOT NULL,
+	`email` text,
 	`email_verified_at` integer,
-	`password` text NOT NULL,
-	`profile_picture` text DEFAULT '/public/images/profile-pictures/default.svg',
+	`password` text,
+	`profile_picture` text DEFAULT '/public/images/profile-pictures/default.svg' NOT NULL,
+	`type` text DEFAULT 'local' NOT NULL,
+	`type_user_id` text,
 	`created_at` integer DEFAULT (unixepoch()) NOT NULL,
 	`deleted_at` integer
 );

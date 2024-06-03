@@ -1,9 +1,11 @@
 import { ctx } from "@/context"
-import Elysia, { StatusMap, t } from "elysia"
+import Elysia, { StatusMap, redirect, t } from "elysia"
 import { ValidateLogin } from "@/schema"
-import { Login } from "@/auth"
+import { Login } from "@/utils/auth"
 import LoginForm from "./partials/LoginForm"
 import { Layout, LayoutFoot } from "@/layout"
+import { GitHubTokenResponse, GitHubUserResponse, SessionData, User } from "@/types/auth"
+import { GitHubFindUser, GitHubRegisterUser } from "@/utils/auth"
 
 export const LoginRoute = new Elysia()
   .use(ctx)
@@ -34,10 +36,10 @@ export const LoginRoute = new Elysia()
                   Log in with Google
                 </button>
 
-                <button class="flex gap-2 w-full bg-white font-bold py-3 justify-center items-center text-sm mt-3">
+                <a href="/auth/github" class="flex gap-2 w-full bg-white font-bold py-3 justify-center items-center text-sm mt-3">
                   <img width="20" src="/public/images/logos/github.svg" alt="github's logo" />
                   Log in with GitHub
-                </button>
+                </a>
               </section>
 
               <div class="max-w-400px w-full grid grid-cols-[1fr_auto_1fr] items-center gap-4 m-8">
@@ -66,11 +68,11 @@ export const LoginRoute = new Elysia()
     const user = await Login(validated.data)
 
     if (!user) {
-      return LoginForm({ old: body, errorMessage: "Your login credentials don't match our records" })
+      return LoginForm({ old: body, errorMessage: "These credentials don't match our records" })
     }
 
     auth.set({
-      value: await jwt.sign({ email: user.email, name: user.name, lastname: user.lastname }),
+      value: await jwt.sign(user),
       httpOnly: true,
       maxAge: 7 * 86400, // one week
     })
@@ -83,4 +85,65 @@ export const LoginRoute = new Elysia()
       email: t.String(),
       password: t.String()
     })
+  })
+  .get('/auth/github', ({ origin }) => {
+    const state = crypto.randomUUID()
+    const redirectUri = `http://${origin}/auth/github/callback`
+    const url = `https://github.com/login/oauth/authorize?client_id=${process.env.GITHUB_CLIENT_ID!}&scope=user:email&redirect_uri=${redirectUri}&state=${state}`
+    return redirect(url, StatusMap['Temporary Redirect'])
+  })
+  .get('/auth/github/callback', async ({ query, jwt, cookie: { auth } }) => {
+    const response = await fetch('https://github.com/login/oauth/access_token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        client_id: process.env.GITHUB_CLIENT_ID!,
+        client_secret: process.env.GITHUB_CLIENT_SECRET!,
+        code: query.code
+      })
+    })
+
+    const userInfo = await response.json() as GitHubTokenResponse
+
+    if (userInfo.error) {
+      return redirect('/login', StatusMap['Permanent Redirect'])
+    }
+
+    const userRequest = await fetch('https://api.github.com/user', {
+      headers: {
+        Authorization: `token ${userInfo.access_token}`
+      }
+    })
+
+    if (!userRequest.ok) {
+      return redirect('/login', StatusMap['Permanent Redirect'])
+    }
+
+    const userGithub = await userRequest.json() as GitHubUserResponse
+    let user: User | undefined = await GitHubFindUser({ id: String(userGithub.id) })
+
+    if (!user) {
+      user = await GitHubRegisterUser({ id: String(userGithub.id), name: userGithub.name, email: userGithub.email, avatar_url: userGithub.avatar_url })
+    }
+
+    const session: SessionData = {
+      name: user.name,
+      email: user.email ?? '',
+      emailVerifiedAt: user.emailVerifiedAt?.toString() ?? '',
+      profilePicture: user.profilePicture,
+      type: user.type,
+      typeUserId: user.typeUserId ?? '',
+      createdAt: user.createdAt.toString()
+    } 
+
+    auth.set({
+      value: await jwt.sign(session),
+      httpOnly: true,
+      maxAge: 7 * 86400, // one week
+    })
+
+    return redirect('/', StatusMap['Permanent Redirect'])
   })
