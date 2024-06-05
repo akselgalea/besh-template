@@ -33,6 +33,7 @@ type SessionData = {
   type: string
   typeUserId: string
   createdAt: string
+  state?: string
 }
 
 export { User, LoginRequest, RegisterRequest, SessionData }

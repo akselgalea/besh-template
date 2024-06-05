@@ -6,13 +6,26 @@ import { GitHubFindUser, GitHubRegisterUser } from "@/utils/auth"
 
 export const GitHubLoginRoute = new Elysia()
   .use(ctx)
-  .get('/auth/github', ({ origin }) => {
+  .get('/auth/github', ({ origin, cookie: { oauthState } }) => {
     const state = crypto.randomUUID()
     const redirectUri = `http://${origin}/auth/github/callback`
     const url = `https://github.com/login/oauth/authorize?client_id=${process.env.GITHUB_CLIENT_ID!}&scope=user:email&redirect_uri=${redirectUri}&state=${state}`
+
+    oauthState.set({ value: { state }})
+    
     return redirect(url, StatusMap['Temporary Redirect'])
   })
-  .get('/auth/github/callback', async ({ query, jwt, cookie: { auth } }) => {
+  .get('/auth/github/callback', async ({ query, jwt, cookie: { auth, oauthState } }) => {
+    const { state } = query
+
+    if (state !== oauthState.value.state) {
+      oauthState.remove()
+      // Hacer un componente de error para el inicio de sesión con GitHub
+      return redirect('/login', StatusMap['Permanent Redirect'])
+    }
+
+    oauthState.remove()
+
     const response = await fetch('https://github.com/login/oauth/access_token', {
       method: 'POST',
       headers: {
@@ -49,7 +62,7 @@ export const GitHubLoginRoute = new Elysia()
       user = await GitHubRegisterUser({ id: String(userGithub.id), name: userGithub.name, email: userGithub.email, avatar_url: userGithub.avatar_url })
     }
 
-    const session: SessionData = {
+    const sessionData: SessionData = {
       id: user.id,
       name: user.name,
       email: user.email ?? '',
@@ -57,11 +70,12 @@ export const GitHubLoginRoute = new Elysia()
       profilePicture: user.profilePicture,
       type: user.type,
       typeUserId: user.typeUserId ?? '',
-      createdAt: user.createdAt.toString()
+      createdAt: user.createdAt.toString(),
+      state: oauthState.value.state
     } 
 
     auth.set({
-      value: await jwt.sign(session),
+      value: await jwt.sign(sessionData),
       httpOnly: true,
       maxAge: 7 * 86400, // one week
     })
