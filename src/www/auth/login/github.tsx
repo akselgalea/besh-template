@@ -15,7 +15,7 @@ export const GitHubLoginRoute = new Elysia()
     
     return redirect(url, StatusMap['Temporary Redirect'])
   })
-  .get('/auth/github/callback', async ({ query: { code, state }, jwt, cookie: { auth, oauthState }, error }) => {
+  .get('/auth/github/callback', async ({ query: { code, state }, jwt, cookie: { auth, oauthState } }) => {
     let errorOauth = 'We couldn\'t authenticate you with Google'
 
     if (!code || state !== oauthState.value.state) {
