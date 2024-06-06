@@ -1,4 +1,4 @@
-import Elysia, { StatusMap, redirect } from "elysia"
+import Elysia, { StatusMap, error, redirect } from "elysia"
 
 import { ctx } from "@/context"
 import { GoogleTokenResponse, GoogleUserResponse, SessionData, User } from "@/types"
@@ -28,11 +28,12 @@ export const GoogleLoginRoute = new Elysia()
 
     return redirect(url, StatusMap['Temporary Redirect'])
   })
-  .get('/auth/google/callback', async ({ origin, query: { code, state }, jwt, cookie: { oauthState, auth }, error }) => {
+  .get('/auth/google/callback', async ({ origin, query: { code, state }, jwt, cookie: { oauthState, auth } }) => {
+    let errorOauth = 'We couldn\'t authenticate you with Google'
+
     if (!code || state !== oauthState.value.state) {
       oauthState.remove()
-      // make a component to show error
-      return error(StatusMap['Unprocessable Content'], 'Invalid state')
+      return redirect(`/login?errorOauth=${errorOauth}`, StatusMap['Permanent Redirect'])
     }
 
     oauthState.remove()
@@ -53,7 +54,7 @@ export const GoogleLoginRoute = new Elysia()
     })
 
     if (!tokenreq.ok) {
-      return error(tokenreq.status, tokenreq.statusText)
+      return redirect(`/login?errorOauth=${errorOauth}`, StatusMap['Permanent Redirect'])
     }
     
     const tokendata = await tokenreq.json() as GoogleTokenResponse
@@ -68,15 +69,12 @@ export const GoogleLoginRoute = new Elysia()
 
     const userGoogle = await profilerequest.json() as GoogleUserResponse
 
-    let user: User | undefined = await GoogleFindUser({ id: userGoogle.id })
-    let errorUser
+    let user: User | undefined = await GoogleFindUser({ id: userGoogle.id, email: userGoogle.email })
     
     if (!user) {
       user = await GoogleRegisterUser(userGoogle).catch((e) => {
-        errorUser = e.message
-        
         if (e.message.includes('email')) {
-          errorUser = 'Email already in use by another platform'
+          errorOauth = 'Email already in use by another platform'
         }
 
         return undefined
@@ -84,7 +82,7 @@ export const GoogleLoginRoute = new Elysia()
     }
 
     if (!user) {
-      return redirect(`/login?errorOauth=${errorUser}`, StatusMap['Permanent Redirect'])
+      return redirect(`/login?errorOauth=${errorOauth}`, StatusMap['Permanent Redirect'])
     }
 
     const sessionData: SessionData = {

@@ -1,4 +1,4 @@
-import Elysia, { StatusMap, error, t } from "elysia"
+import Elysia, { StatusMap, t } from "elysia"
 
 import { ctx } from "@/context"
 import { ValidateLogin } from "@/schema"
@@ -61,17 +61,17 @@ export const LoginRoute = new Elysia()
       </Layout>
     )
   })
-  .post('login', async ({ body, set, jwt, cookie: { auth } }) => {
+  .post('login', async ({ body, set, jwt, cookie: { auth }, error }) => {
     const validated = ValidateLogin(body)
 
     if (!validated.success) {
-      return LoginForm({ old: body, errors: validated.error.flatten() })
+      return error(StatusMap['Unprocessable Content'], LoginForm({ old: body, errors: validated.error.flatten() }))
     }
 
     const user = await Login(validated.data)
 
     if (!user) {
-      return LoginForm({ old: body, errorMessage: "These credentials don't match our records" })
+      return error(StatusMap['Unprocessable Content'], LoginForm({ old: body, errorMessage: "These credentials don't match our records" }))
     }
 
     auth.set({
@@ -80,7 +80,7 @@ export const LoginRoute = new Elysia()
       maxAge: 7 * 86400, // one week
     })
 
-    set.status = StatusMap['No Content']
+    set.status = StatusMap['Permanent Redirect']
     set.headers['hx-redirect'] = '/'
     return
   }, {

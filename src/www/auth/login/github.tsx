@@ -16,10 +16,11 @@ export const GitHubLoginRoute = new Elysia()
     return redirect(url, StatusMap['Temporary Redirect'])
   })
   .get('/auth/github/callback', async ({ query: { code, state }, jwt, cookie: { auth, oauthState }, error }) => {
+    let errorOauth = 'We couldn\'t authenticate you with Google'
+
     if (!code || state !== oauthState.value.state) {
       oauthState.remove()
-      // make a component to show error
-      return error(StatusMap['Unprocessable Content'], 'Invalid state')
+      return redirect(`/login?errorOauth=${errorOauth}`, StatusMap['Permanent Redirect'])
     }
 
     oauthState.remove()
@@ -37,10 +38,14 @@ export const GitHubLoginRoute = new Elysia()
       })
     })
 
+    if (!response.ok) {
+      return redirect(`/login?errorOauth=${errorOauth}`, StatusMap['Permanent Redirect'])
+    }
+
     const tokeninfo = await response.json() as GitHubTokenResponse
 
     if (tokeninfo.error) {
-      return redirect('/login', StatusMap['Permanent Redirect'])
+      return redirect(`/login?errorOauth=${errorOauth}`, StatusMap['Permanent Redirect'])
     }
 
     const userRequest = await fetch('https://api.github.com/user', {
@@ -50,14 +55,24 @@ export const GitHubLoginRoute = new Elysia()
     })
 
     if (!userRequest.ok) {
-      return redirect('/login', StatusMap['Permanent Redirect'])
+      return redirect(`/login?errorOauth=${errorOauth}`, StatusMap['Permanent Redirect'])
     }
 
     const userGithub = await userRequest.json() as GitHubUserResponse
     let user: User | undefined = await GitHubFindUser({ id: String(userGithub.id) })
 
     if (!user) {
-      user = await GitHubRegisterUser({ id: String(userGithub.id), name: userGithub.name, email: userGithub.email, avatar_url: userGithub.avatar_url })
+      user = await GitHubRegisterUser({ id: String(userGithub.id), name: userGithub.name, email: userGithub.email, avatar_url: userGithub.avatar_url }).catch(err => {
+        if (err.message.includes('email')) {
+          errorOauth = 'Email already in use by another platform'
+        }
+
+        return undefined
+      })
+    }
+
+    if (!user) {
+      return redirect(`/login?errorOauth=${errorOauth}`, StatusMap['Permanent Redirect'])
     }
 
     const sessionData: SessionData = {
