@@ -1,4 +1,4 @@
-import Elysia, { StatusMap, t } from "elysia"
+import Elysia, { StatusMap, error, t } from "elysia"
 
 import { ctx } from "@/context"
 import { ValidateLogin } from "@/schema"
@@ -10,7 +10,7 @@ import { GoogleLoginRoute } from "./google"
 
 export const LoginRoute = new Elysia()
   .use(ctx)
-  .get('/login', () => {
+  .get('/login', ({ query: { errorOauth } }) => {
     return (
       <Layout title="Login">
         <main class="grid grid-cols-1 lg:grid-cols-2">
@@ -41,6 +41,8 @@ export const LoginRoute = new Elysia()
                   <img width="20" src="/public/images/logos/github.svg" alt="github's logo" />
                   Log in with GitHub
                 </a>
+
+                {errorOauth && <p class="text-red-500 text-xs font-medium text-center mt-4">{errorOauth}</p>}
               </section>
 
               <div class="max-w-400px w-full grid grid-cols-[1fr_auto_1fr] items-center gap-4 m-8">

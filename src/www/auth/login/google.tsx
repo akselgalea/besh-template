@@ -1,11 +1,14 @@
 import Elysia, { StatusMap, redirect } from "elysia"
 
 import { ctx } from "@/context"
+import { GoogleTokenResponse, GoogleUserResponse, SessionData, User } from "@/types"
+import { GoogleFindUser, GoogleRegisterUser } from "@/utils/auth"
 
 export const GoogleLoginRoute = new Elysia()
   .use(ctx)
   .get('/auth/google', ({ origin, cookie: { oauthState } }) => {
     const state = crypto.randomUUID()
+
     oauthState.set({ value: { state }})
 
     const redirectUri = `http://${origin}/auth/google/callback`
@@ -25,37 +28,82 @@ export const GoogleLoginRoute = new Elysia()
 
     return redirect(url, StatusMap['Temporary Redirect'])
   })
-  .get('/auth/google/callback', async ({ query, jwt, cookie: { oauthState } }) => {
-    console.log(query)
-    const { code, scope } = query
+  .get('/auth/google/callback', async ({ origin, query: { code, state }, jwt, cookie: { oauthState, auth }, error }) => {
+    if (!code || state !== oauthState.value.state) {
+      oauthState.remove()
+      // make a component to show error
+      return error(StatusMap['Unprocessable Content'], 'Invalid state')
+    }
 
-    const token = await fetch('https://www.googleapis.com/oauth2/v4/token', {
+    oauthState.remove()
+
+    const params = new URLSearchParams()
+    params.append('code', code)
+    params.append('client_id', process.env.GOOGLE_CLIENT_ID!)
+    params.append('client_secret', process.env.GOOGLE_CLIENT_SECRET!)
+    params.append('redirect_uri', `http://${origin}/auth/google/callback`)
+    params.append('grant_type', 'authorization_code')
+
+    const tokenreq = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       },
-      body: `grant_type=authorization_code&code=${code}&client_id=${process.env.GOOGLE_CLIENT_ID}&client_secret=${process.env.GOOGLE_CLIENT_SECRET}`
+      body: params
     })
 
-    const tokendata = await token.json()
-    console.log('token data', tokendata)
+    if (!tokenreq.ok) {
+      return error(tokenreq.status, tokenreq.statusText)
+    }
+    
+    const tokendata = await tokenreq.json() as GoogleTokenResponse
+    const { access_token: token } = tokendata
 
-    const profilerequest = await fetch(`https://www.googleapis.com/auth/v2/userinfo?scope=${scope}`, {
-      method: 'POST',
+    const profilerequest = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+      method: 'GET',
       headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${code}`
+        'Authorization': `Bearer ${token}`
       }
     })
-    
-    const text = await profilerequest.text()
-    console.log(text)
 
-    if (!profilerequest.ok) {
-      console.log(profilerequest.statusText)
+    const userGoogle = await profilerequest.json() as GoogleUserResponse
+
+    let user: User | undefined = await GoogleFindUser({ id: userGoogle.id })
+    let errorUser
+    
+    if (!user) {
+      user = await GoogleRegisterUser(userGoogle).catch((e) => {
+        errorUser = e.message
+        
+        if (e.message.includes('email')) {
+          errorUser = 'Email already in use by another platform'
+        }
+
+        return undefined
+      })
     }
 
-    const profile = await profilerequest.json()
+    if (!user) {
+      return redirect(`/login?errorOauth=${errorUser}`, StatusMap['Permanent Redirect'])
+    }
 
-    console.log('profile',profile)
+    const sessionData: SessionData = {
+      id: user.id,
+      name: user.name,
+      email: user.email ?? '',
+      emailVerifiedAt: user.emailVerifiedAt?.toString() ?? '',
+      profilePicture: user.profilePicture,
+      type: user.type,
+      typeUserId: user.typeUserId ?? '',
+      createdAt: user.createdAt.toString(),
+      token: token
+    }
+
+    auth.set({
+      value: await jwt.sign(sessionData),
+      httpOnly: true,
+      maxAge: 7 * 86400, // one week
+    })
+
+    return redirect('/', StatusMap['Permanent Redirect'])
   })

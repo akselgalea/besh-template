@@ -15,13 +15,11 @@ export const GitHubLoginRoute = new Elysia()
     
     return redirect(url, StatusMap['Temporary Redirect'])
   })
-  .get('/auth/github/callback', async ({ query, jwt, cookie: { auth, oauthState } }) => {
-    const { state } = query
-
-    if (state !== oauthState.value.state) {
+  .get('/auth/github/callback', async ({ query: { code, state }, jwt, cookie: { auth, oauthState }, error }) => {
+    if (!code || state !== oauthState.value.state) {
       oauthState.remove()
-      // Hacer un componente de error para el inicio de sesión con GitHub
-      return redirect('/login', StatusMap['Permanent Redirect'])
+      // make a component to show error
+      return error(StatusMap['Unprocessable Content'], 'Invalid state')
     }
 
     oauthState.remove()
@@ -35,19 +33,19 @@ export const GitHubLoginRoute = new Elysia()
       body: JSON.stringify({
         client_id: process.env.GITHUB_CLIENT_ID!,
         client_secret: process.env.GITHUB_CLIENT_SECRET!,
-        code: query.code
+        code
       })
     })
 
-    const userInfo = await response.json() as GitHubTokenResponse
+    const tokeninfo = await response.json() as GitHubTokenResponse
 
-    if (userInfo.error) {
+    if (tokeninfo.error) {
       return redirect('/login', StatusMap['Permanent Redirect'])
     }
 
     const userRequest = await fetch('https://api.github.com/user', {
       headers: {
-        Authorization: `token ${userInfo.access_token}`
+        Authorization: `token ${tokeninfo.access_token}`
       }
     })
 
@@ -71,7 +69,7 @@ export const GitHubLoginRoute = new Elysia()
       type: user.type,
       typeUserId: user.typeUserId ?? '',
       createdAt: user.createdAt.toString(),
-      state: oauthState.value.state
+      token: tokeninfo.access_token
     } 
 
     auth.set({

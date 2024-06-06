@@ -33,7 +33,7 @@ type SessionData = {
   type: string
   typeUserId: string
   createdAt: string
-  state?: string
+  token?: string
 }
 
 export { User, LoginRequest, RegisterRequest, SessionData }
