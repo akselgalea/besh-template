@@ -25,6 +25,7 @@
     ]
   },
   "include": [
-    "src"
+    "src",
+    "html-attributes.d.ts"
   ]
 }

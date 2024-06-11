@@ -10,6 +10,7 @@ const Layout = ({ title, children }: PropsWithChildren<{ title: string }>) => {
         <title>BESH - {title}</title>
         <link rel="stylesheet" href="/public/css/styles.css"></link>
         <link rel="stylesheet" href="/public/css/unocss-tailwind.min.css"></link>
+        <script src='/public/js/_hyperscript.min.js'></script>
         <script src="/public/js/htmx.min.js"></script>
         <script src="/public/js/unocss-runtime.js"></script>
       </head>

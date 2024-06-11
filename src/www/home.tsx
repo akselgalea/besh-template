@@ -1,7 +1,7 @@
 const HomePage = () => {
   return (
     <>
-      <button class="p-3 font-semibold rounded bg-red-600 text-white" hx-get="/test" hx-target="#text-replace">
+      <button class="p-3 font-semibold rounded bg-red-600 text-white" hx-get="/health" hx-target="#text-replace">
         Test
       </button>
 
