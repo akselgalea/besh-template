@@ -70,7 +70,7 @@ export const RegisterRoute = new Elysia()
       maxAge: 7 * 86400, // one week
     })
 
-    set.redirect = '/'
+    set.headers['hx-redirect'] = '/'
   }, {
     body: t.Object({
       name: t.String(),
