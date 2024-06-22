@@ -9,7 +9,7 @@ export const GitHubFindUser = ({ id }: { id: string }) => {
 }
 
 export const GitHubRegisterUser = async ({ id, name, email, avatar_url }: RegisterGitHubUser) => {
-  const created = await db.insert(users).values({ name, email, profilePicture: avatar_url, type: 'github', typeUserId: id }).returning()
+  const created = await db.insert(users).values({ name, email, emailVerifiedAt: new Date(), profilePicture: avatar_url, type: 'github', typeUserId: id }).returning()
 
   return created[0]
 }

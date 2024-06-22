@@ -5,6 +5,7 @@ import { AuthedHeader, Layout, LayoutFoot, Main } from "@/layout"
 import { HomePage } from "@/www/home"
 import { NotFound } from "./404"
 import { User } from "@/types"
+import { ChatRoutes } from "./chat"
 
 export const PageRoutes = new Elysia()
 .use(ctx)
@@ -18,17 +19,20 @@ export const PageRoutes = new Elysia()
       return 'Unauthorized'
     }
   }
-}, app => app.get('/', ({ path, session }) => {
-  return (
-    <Layout title="Home page">
-      <AuthedHeader user={session as User} currentUrl={path} />
-      <Main>
-        <HomePage></HomePage>
-      </Main>
-      <LayoutFoot />
-    </Layout>
-  )
-  }).get('*', ({ path, session }) => {
+}, app =>
+  app.use(ChatRoutes)
+  .get('/', ({ path, session }) => {
+    return (
+      <Layout title="Home page">
+        <AuthedHeader user={session as User} currentUrl={path} />
+        <Main>
+          <HomePage></HomePage>
+        </Main>
+        <LayoutFoot />
+      </Layout>
+    )
+  })
+  .get('*', ({ path, session }) => {
     return (
       <Layout title="Page not found">
         <AuthedHeader user={session as User} currentUrl={path} />

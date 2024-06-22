@@ -15,7 +15,7 @@ export const GoogleFindUser = ({ id, email }: { id: string, email?: string }) =>
 }
 
 export const GoogleRegisterUser = async ({ id, name, email, picture  }: GoogleUserResponse) => {
-  const created = await db.insert(users).values({ name, email, profilePicture: picture, type: 'google', typeUserId: id }).returning()
+  const created = await db.insert(users).values({ name, email, emailVerifiedAt: new Date(), profilePicture: picture, type: 'google', typeUserId: id }).returning()
 
   return created[0]
 }

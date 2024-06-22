@@ -1,6 +1,6 @@
 import type { PropsWithChildren } from "@kitajs/html"
 
-export const LayoutFoot = ({ guest, children }: PropsWithChildren<{ guest?: boolean }>) => {
+export const LayoutFoot = ({ children }: PropsWithChildren<{}>) => {
   return (
     <>
       { children }

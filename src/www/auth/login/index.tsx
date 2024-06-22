@@ -57,7 +57,7 @@ export const LoginRoute = new Elysia()
             <img src="/public/images/logos/bun4x.png" alt="logo bun" />
           </div>
         </main>
-        <LayoutFoot guest={true}></LayoutFoot>
+        <LayoutFoot></LayoutFoot>
       </Layout>
     )
   })
