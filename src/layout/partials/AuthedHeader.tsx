@@ -9,8 +9,12 @@ const AuthedHeader = ({ user, currentUrl, children }: PropsWithChildren<{ user: 
       <nav class="grid grid-cols-2 max-w-[1280px] mx-auto">
         <div class="flex justify-start items-center [&>a]:py-2 [&>a]:px-6">
           <a href="/" class={'flex gap-2 items-center font-semibold hover:bg-white hover:text-black' + (currentUrl === '/' ? active : '')}>
-            <img src="/public/images/logos/bun.svg" width={30} alt="logo bun" />
+            <img src="/public/images/logos/bun.svg" width={30} alt="bun logo" />
             Home
+          </a>
+          <a href="/chat" class={'flex gap-2 items-center font-semibold hover:bg-white hover:text-black' + (currentUrl === '/chat' ? active : '')}>
+            <img src="/public/icons/chat.svg" width={30} alt="chat icon" />
+            Chat
           </a>
           { children }
         </div>

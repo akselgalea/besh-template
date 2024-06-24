@@ -28,6 +28,7 @@ export const messages = sqliteTable("messages", {
   userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'no action' }),
   text: text("text").notNull(),
   type: text("type", { enum: ['text', 'image', 'video', 'audio', 'file', 'location', 'sticker', 'contact', 'document', 'unknown'] }).notNull().default('text'),
+  seenAt: integer("seen_at", { mode: 'timestamp' }),
   createdAt: integer("created_at", { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
   updatedAt: integer("updated_at", { mode: 'timestamp' }),
   deletedAt: integer("deleted_at", { mode: 'timestamp' })

@@ -1,0 +1,1 @@
+ALTER TABLE `messages` ADD `seen_at` integer;

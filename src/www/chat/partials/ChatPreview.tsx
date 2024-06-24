@@ -2,13 +2,13 @@ import { User } from "@/types"
 import { LastMessage } from "@/types/chat"
 import { FormatList } from "@/utils/text"
 
-export const ChatPreview = ({ title, type, users, userId, lastMessage }: { title?: string | null, type: string, users: User[], userId: number, lastMessage: LastMessage }) => {
+export const ChatPreview = ({ id, title, type, users, userId, lastMessage }: { id: number, title?: string | null, type: string, users: User[], userId: number, lastMessage: LastMessage }) => {
   const nombres = users.map(u => u.name.split(' ')[0])
   const groupTitle = type === 'group' ? title || FormatList(nombres) : null
   const previewTitle =  groupTitle || users.find(u => u.id !== userId)!.name
 
   return (
-    <div class="grid grid-cols-[50px_1fr] gap-2 p-2 items-center">
+    <div class="grid grid-cols-[50px_1fr] gap-2 p-2 items-center hover:bg-gray-100 hover:cursor-pointer" hx-get={`/chat/${id}`} hx-target="#chat-box">
       <img class="rounded-full" width={50} src={lastMessage.user.profilePicture} alt="profile picture" />
       <div class="w-full">
         <div class="flex flex-grow justify-between gap-2 items-center">
