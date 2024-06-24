@@ -1,6 +1,8 @@
 import { db } from "@/db"
 import { usersChats } from "@/db/schema"
+import { User } from "@/types"
 import { eq, sql } from "drizzle-orm"
+import { FormatList } from "../text"
 
 export const getUserChatsByID = async (id: number) => {
   const chatsUser = db.select().from(usersChats).where(eq(usersChats.userId, id))
@@ -39,4 +41,57 @@ export const getUserChatsByID = async (id: number) => {
       unseenMessages
     }
   })
+}
+
+export const getChatByID = async (id: number) => {
+  const chat = await db.query.chats.findFirst({
+    with: {
+      usersChats: {
+        columns: {},
+        with: {
+          user: true
+        }
+      },
+      messages: {
+        with: {
+          user: true
+        },
+        orderBy: (m, { asc }) => asc(m.createdAt),
+        where: (m, { isNull }) => isNull(m.deletedAt),
+        limit: 20
+      },
+    },
+    where: (m, { and, eq, isNull }) => and(eq(m.id, id), isNull(m.deletedAt))
+  })
+
+  if (!chat) return null
+
+  return {
+    id,
+    title: chat.title,
+    type: chat.type,
+    createdAt: chat.createdAt,
+    deletedAt: chat.deletedAt,
+    users: chat.usersChats.map(uc => uc.user),
+    messages: chat.messages
+  }
+}
+
+export const getMessagesByChatId = (id: number, offset = 0) => {
+  return db.query.messages.findMany({
+    with: {
+      user: true,
+    },
+    limit: 20,
+    offset,
+    where: (m, { and, eq, isNull }) => and(eq(m.id, id), isNull(m.deletedAt))
+  })
+}
+
+export const GetChatTitle = ({ title, type, users, currentUser }: { title?: string | null, type: string, users: User[], currentUser: number }) => {
+  const nombres = users.map(u => u.name.split(' ')[0])
+  const groupTitle = type === 'group' ? title || FormatList(nombres) : null
+  const previewTitle =  groupTitle || users.find(u => u.id !== currentUser)!.name
+
+  return previewTitle
 }

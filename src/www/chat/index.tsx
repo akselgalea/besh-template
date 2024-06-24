@@ -1,10 +1,11 @@
-import { Elysia } from "elysia"
+import { Elysia, StatusMap } from "elysia"
 
 import { ctx } from "@/context"
 import { AuthedHeader, Footer, Layout, Main, LayoutFoot } from "@/layout"
 import { SessionData, User } from "@/types"
-import { getUserChatsByID } from "@/utils/chat"
+import { getChatByID, getUserChatsByID } from "@/utils/chat"
 import { ChatPreview } from "./partials/ChatPreview"
+import { ChatBox } from "./partials/ChatBox"
 
 export const ChatRoutes = new Elysia({
   prefix: '/chat',
@@ -32,7 +33,7 @@ export const ChatRoutes = new Elysia({
             </ul>
           </div>
 
-          <div id="chat-box" class="grid place-items-center h-80dvh">
+          <div id="chat-box" class="grid place-items-center h-80dvh w-full">
             <h2 class="text-xl font-bold">This is a Chat Page</h2>
           </div>
         </div>
@@ -44,6 +45,17 @@ export const ChatRoutes = new Elysia({
       </LayoutFoot>
     </Layout>
   )
+})
+.get('/:id', async ({ params: { id }, session, error }) => {
+  const user = session as User
+  const nid = Number(id)
+  const chat = await getChatByID(nid)
+
+  if (!chat) {
+    return error(StatusMap['Not Found'], 'Chat not found')
+  }
+
+  return <ChatBox userId={user.id} chat={chat}></ChatBox>
 })
 
 export const ChatWsRoutes = new Elysia({
