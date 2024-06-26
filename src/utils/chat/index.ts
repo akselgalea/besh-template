@@ -37,7 +37,7 @@ export const getUserChatsByID = async (id: number) => {
       type,
       createdAt,
       users: usersChats.map(uc => uc.user),
-      lastMessage: messages[0] ?? 'Start a new chat',
+      lastMessage: messages[0] ?? null,
       unseenMessages
     }
   })
@@ -56,9 +56,9 @@ export const getChatByID = async (id: number) => {
         with: {
           user: true
         },
-        orderBy: (m, { asc }) => asc(m.createdAt),
+        orderBy: (m, { desc }) => desc(m.createdAt),
         where: (m, { isNull }) => isNull(m.deletedAt),
-        limit: 20
+        limit: 50
       },
     },
     where: (m, { and, eq, isNull }) => and(eq(m.id, id), isNull(m.deletedAt))
@@ -73,19 +73,8 @@ export const getChatByID = async (id: number) => {
     createdAt: chat.createdAt,
     deletedAt: chat.deletedAt,
     users: chat.usersChats.map(uc => uc.user),
-    messages: chat.messages
+    messages: chat.messages.reverse()
   }
-}
-
-export const getMessagesByChatId = (id: number, offset = 0) => {
-  return db.query.messages.findMany({
-    with: {
-      user: true,
-    },
-    limit: 20,
-    offset,
-    where: (m, { and, eq, isNull }) => and(eq(m.id, id), isNull(m.deletedAt))
-  })
 }
 
 export const GetChatTitle = ({ title, type, users, currentUser }: { title?: string | null, type: string, users: User[], currentUser: number }) => {
@@ -95,3 +84,9 @@ export const GetChatTitle = ({ title, type, users, currentUser }: { title?: stri
 
   return previewTitle
 }
+
+export const GetChatAvatar = ({ users, userId }: { type: string, users: User[], userId: number }) => {
+  return users.find(u => u.id !== userId)!.profilePicture
+}
+
+export * from "./message"

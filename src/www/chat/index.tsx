@@ -1,11 +1,11 @@
-import { Elysia, StatusMap } from "elysia"
+import { Elysia, StatusMap, t } from "elysia"
 
 import { ctx } from "@/context"
 import { AuthedHeader, Footer, Layout, Main, LayoutFoot } from "@/layout"
 import { SessionData, User } from "@/types"
-import { getChatByID, getUserChatsByID } from "@/utils/chat"
+import { getChatByID, GetMessagesByChatId, getUserChatsByID, InsertMessage } from "@/utils/chat"
 import { ChatPreview } from "./partials/ChatPreview"
-import { ChatBox } from "./partials/ChatBox"
+import { ChatBox, MessageInputOOB, MessageOOB } from "./partials/ChatBox"
 
 export const ChatRoutes = new Elysia({
   prefix: '/chat',
@@ -15,15 +15,14 @@ export const ChatRoutes = new Elysia({
 .get('/', async ({ path, session }) => {
   const user = session as User
   const chats = await getUserChatsByID(user.id)
-  console.log('chats', chats)
   
   return (
     <Layout title="Chat">
       <h1>Chat</h1>
       <AuthedHeader currentUrl={path} user={session as User} />
       <Main>
-        <div class="grid grid-cols-[400px_1fr] gap-2">
-          <div hx-ext="ws" ws-connect="/chat/notifications">
+        <div class="grid grid-cols-[400px_1fr] gap-2" hx-ext="ws" ws-connect="/chat/notifications">
+          <div>
             <ul class="w-full" id="chats">
               {chats.map(({ id, title, type, users, lastMessage }) => (
                 <li>
@@ -65,6 +64,57 @@ export const ChatWsRoutes = new Elysia({
 })
 .use(ctx)
 .ws('/chat/notifications', {
+  body: t.Object({
+    chatId: t.String(),
+    userId: t.String(),
+    message: t.String(),
+    HEADERS: t.Object({
+      "HX-Request": t.String(),
+      "HX-Trigger": t.String(),
+      "HX-Trigger-Name": t.Nullable(t.String()),
+      "HX-Target": t.String(),
+      "HX-Current-URL": t.String(),
+    })
+  }),
+  async open (ws) {
+    console.log('open')
+    const { session } = ws.data
+
+    ws.subscribe('chat-message')
+
+    if (!session) {
+      ws.close()
+    }
+  },
+  async message (ws, message) {
+    const session = ws.data.session as SessionData
+    const chatId = Number(message.chatId)
+
+    console.log('session id', session.id)
+
+    const newMessage = await InsertMessage(chatId, session.id, message.message)
+
+    if (!newMessage) {
+      return
+    }
+
+    ws.send(
+      <>
+        <MessageOOB message={newMessage} currentUserId={session.id} />
+        <MessageInputOOB />
+      </>
+    )
+
+    ws.publish('chat-message',
+      <MessageOOB message={newMessage} />
+    )
+  },
+  close (ws) {
+    ws.unsubscribe('chat-message')
+    console.log('ws close')
+  }
+})
+.ws('/chat/:id', {
   async open (ws) {
     const { session } = ws.data
 
